@@ -3,35 +3,35 @@ from datetime import datetime
 
 
 #Création des fonctions de la table Caracter
-def createCaracter(caracterID, first_name, last_name, resume):
+def createCaracter(first_name, last_name, resume):
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
     curseur.execute("INSERT INTO Caracter VALUES(?,?,?,?)", (None,first_name,last_name, resume))
     connexion.commit()
     connexion.close()
 
-def readCaracter(caracterID, first_name, last_name, resume):
+def readCaracter(caracterID):
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
-    curseur.execute("SELECT first_name, last_name, resume FROM Caracter GROUP BY CaracterID")
-    curseur.fetchall()
+    curseur.execute("SELECT * FROM Caracter WHERE CaracterID = ?;",(caracterID,))
+    print(curseur.fetchall())
 
 def updateCaracter(caracterID, first_name = None, last_name = None, resume = None):
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
     if first_name is not None:
-        curseur.execute("UPDATE Caracter SET first_name = ? WHERE caracterID = ?;"), (first_name, caracterID)
+        curseur.execute("UPDATE Caracter SET firstname = ? WHERE caracterID = ?;", (first_name, caracterID))
     if last_name is not None:
-        curseur.execute("UPDATE Caracter SET last_name = ? WHERE caracterID = ?;"), (last_name, caracterID)
+        curseur.execute("UPDATE Caracter SET lastname = ? WHERE caracterID = ?;", (last_name, caracterID))
     if resume is not None:
-        curseur.execute("UPDATE Caracter SET resume = ? WHERE caracterID = ?;"), (resume, caracterID)
+        curseur.execute("UPDATE Caracter SET resume = ? WHERE caracterID = ?;", (resume, caracterID))
     connexion.commit()
     connexion.close()
 
 def deleteCaracter(caracterID):
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
-    curseur.execute("DELETE FROM Caracter WHERE CaracterID = ?;"), (caracterID)
+    curseur.execute("DELETE FROM Caracter WHERE CaracterID = ?;", (caracterID,))
     connexion.commit()
     connexion.close()
 
