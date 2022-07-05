@@ -20,3 +20,13 @@ def supprimer_chapitre():
     curseur.execute("DELETE FROM Chapter WHERE ChapterID = ?;", (Id,))
     connexion.commit()
     connexion.close()
+
+# fonction pour mettre à jour chapitre
+
+def maj_chapitre():
+    connexion = sqlite3.connect("bdd.db")
+    curseur = connexion.cursor()
+    curseur.execute("UPDATE Chapter SET Summary = ? WHERE ChapterID = ?", (id))
+    connexion.commit()
+    connexion.close()
+
