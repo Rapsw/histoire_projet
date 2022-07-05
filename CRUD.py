@@ -15,5 +15,5 @@ def readCaracter():
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
     curseur.execute("SELECT FirstName, LastName, Resume FROM Caracter GROUP BY CaracterID")
-
+    curseur.fetchall()
 
