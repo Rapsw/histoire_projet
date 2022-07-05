@@ -10,12 +10,11 @@ def creation_chapitre(Summary):
     connexion.commit()
     connexion.close()
 
-def read_chapitre():
+def read_chapitre(Summary):
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
     curseur.execute("SELECT Summary FROM Chapter")
     curseur.fetchall()
-
 
 # fonction pour suprimer chapitres
 
@@ -37,7 +36,7 @@ def maj_chapitre(ChapterID, new_summary):
 
 # fonction pour metre à jour comment
 
-def maj_comment(CommentID, new_comment, new_text):
+"""def maj_comment(CommentID, new_comment, new_text):
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
         if new_comment is not None
@@ -46,4 +45,8 @@ def maj_comment(CommentID, new_comment, new_text):
             curseur.execute("UPDATE Comment SET Text = ? WHERE CommentID = ?", (new_text, CommentID))
         connexion.commit()
         connexion.close()
+"""        
 
+creation_chapitre("algo")
+supprimer_chapitre(11)
+maj_chapitre(5,"mama is great")
