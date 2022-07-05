@@ -1,6 +1,8 @@
 import sqlite3
 from datetime import datetime
 
+from nbformat import read
+
 
 #Création des fonctions de la table Caracter
 def createCaracter(first_name, last_name, resume):
@@ -41,7 +43,7 @@ def updateUser(userID, username = None, password = None):
     if username is not None:
         curseur.execute("UPDATE User SET username = ? WHERE userID = ?;", (username, userID))
     if password is not None:
-        curseur.execute("UPDATE User SET password = ? WHERE userID = ?;"), (password, userID)
+        curseur.execute("UPDATE User SET password = ? WHERE userID = ?;", (password, userID))
     connexion.commit()
     connexion.close()
 
@@ -68,3 +70,8 @@ def updateChallenge(userID, paragraphID, text = None, vote = None):
                         WHERE userID = ? AND paragraphID = ?;"""), (vote, userID, paragraphID)
     connexion.commit()
     connexion.close()
+
+
+readCaracter(1)
+
+
