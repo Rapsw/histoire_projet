@@ -1,54 +1,70 @@
 import sqlite3
+from datetime import datetime
+
 
 #Création des fonctions de la table Caracter
-def createCaracter():
+def createCaracter(caracterID, first_name, last_name, resume):
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
-    FirstName = input("Entrez le prénom du personnage: ")
-    LastName = input("Entrez le nom du personnage: ")
-    Resume = input("Décrivez succinctement l'histoire du personnage: ")
-    curseur.execute("INSERT INTO Caracter VALUES(?,?,?,?)", (None,FirstName,LastName, Resume))
+    curseur.execute("INSERT INTO Caracter VALUES(?,?,?,?)", (None,first_name,last_name, resume))
     connexion.commit()
     connexion.close()
 
-def readCaracter():
+def readCaracter(caracterID, first_name, last_name, resume):
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
-    curseur.execute("SELECT FirstName, LastName, Resume FROM Caracter GROUP BY CaracterID")
+    curseur.execute("SELECT first_name, last_name, resume FROM Caracter GROUP BY CaracterID")
     curseur.fetchall()
 
-def updateCaracter(FirstName = None, LastName = None, Resume = None):
+def updateCaracter(caracterID, first_name = None, last_name = None, resume = None):
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
-    NewFirstName= input("Entrez le nouveau prénom du personnage: ")
-    NewLastName = input("Entrez le nouveau nom du personnage: ")
-    curseur.execute("""UPDATE Caracter 
-    if FirstName is not None:
-        SET FirstName = NewFirstName""")
-    curseur.execute("""UPDATE Caracter 
-    if LastName is not None:
-        SET LastName = NewLastName""")
+    if first_name is not None:
+        curseur.execute("UPDATE Caracter SET first_name = ? WHERE caracterID = ?;"), (first_name, caracterID)
+    if last_name is not None:
+        curseur.execute("UPDATE Caracter SET last_name = ? WHERE caracterID = ?;"), (last_name, caracterID)
+    if resume is not None:
+        curseur.execute("UPDATE Caracter SET resume = ? WHERE caracterID = ?;"), (resume, caracterID)
     connexion.commit()
     connexion.close()
 
-def deleteCaracter():
+def deleteCaracter(caracterID):
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
-    CaracterToBeDeleted = int(input("Entrez l'ID du personnage à supprimer: "))
-    curseur.execute("DELETE FROM Caracter WHERE CaracterID = CaracterToBeDeleted")
+    curseur.execute("DELETE FROM Caracter WHERE CaracterID = ?;"), (caracterID)
     connexion.commit()
     connexion.close()
 
-def updateUser(Username = None, Password = None):
+def updateUser(userID, username = None, password = None):
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
-    NewUsername = ("Entrez votre nouveau nom d'utilisateur: ")
-    NewPassword = ("Entrez votre nouveau mot de passe: ")
-    curseur.execute("""UPDATE User
-    if Username is not None:
-        SET Username = NewUsername""")
-    curseur.execute("""UPDATE User
-    if Password is not None:
-        SET Password = NewPassword""")
+    if username is not None:
+        curseur.execute("UPDATE User SET username = ? WHERE userID = ?;", (username, userID))
+    if password is not None:
+        curseur.execute("UPDATE User SET password = ? WHERE userID = ?;"), (password, userID)
+    connexion.commit()
+    connexion.close()
+
+def updateParagraph(userID, chapterID, paragraphID, date = None, text = None):
+    connexion = sqlite3.connect("bdd.db")
+    curseur = connexion.cursor()
+    if date is not None:
+        curseur.execute("""UPDATE Paragraph SET date = ? 
+                        WHERE userID = ? AND chapterID = ? AND paragraphID = ?;"""), (date, userID, chapterID, paragraphID)
+    if text is not None:
+        curseur.execute("""UPDATE Paragraph SET text = ?
+                        WHERE userID = ? AND chapterID = ? AND paragraphID = ?;"""), (text, userID, chapterID, paragraphID)
+    connexion.commit()
+    connexion.close()
+
+def updateChallenge(userID, paragraphID, text = None, vote = None):
+    connexion = sqlite3.connect("bdd.db")
+    curseur = connexion.cursor()
+    if text is not None:
+        curseur.execute("""UPDATE Challenge SET text = ?
+                        WHERE userID = ? AND paragraphID = ?;"""), (text, userID, paragraphID)
+    if vote is not None:
+        curseur.execute("""UPDATE Challenge SET vote = ?
+                        WHERE userID = ? AND paragraphID = ?;"""), (vote, userID, paragraphID)
     connexion.commit()
     connexion.close()
