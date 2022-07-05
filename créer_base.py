@@ -63,7 +63,7 @@ curseur.execute('''CREATE TABLE Challenge
 curseur.execute('''CREATE TABLE Caracter
                 (
                     CaracterID INTEGER PRIMARY KEY,
-                    FistName TEXT,
+                    FirstName TEXT,
                     LastName TEXT,
                     Resume TEXT
                 )
@@ -82,7 +82,4 @@ curseur.execute('''CREATE TABLE IsInChapter
 
 connexion.commit()
 
-"""
-création des fonctions en lien avec la table User
-"""
 
