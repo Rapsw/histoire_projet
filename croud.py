@@ -1,12 +1,22 @@
 import sqlite3
 
+from sympy import Id
+
 # création des fonctions de la table Chapter
 
 def creation_chapitre():
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
-    ChapterId = 
-    Summry = str(input("Entrer un nom de chapitre"))
-    curseur.execute("INSERT INTO   VALUES(?,?,?)(")
+    Summary = str(input("Entrer un nom de chapitre"))
+    curseur.execute("INSERT INTO Chapter VALUES(?,?)",(None, Summary))
+    connexion.commit()
+    connexion.close()
+
+# fonction pour suprimer chapitres
+
+def supprimer_chapitre():
+    connexion = sqlite3.connect("bdd.db")
+    curseur = connexion.cursor()
+    curseur.execute("DELETE FROM Chapter WHERE ChapterID = ?;", (Id,))
     connexion.commit()
     connexion.close()
