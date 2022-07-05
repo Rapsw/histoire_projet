@@ -10,6 +10,13 @@ def creation_chapitre(Summary):
     connexion.commit()
     connexion.close()
 
+def read_chapitre():
+    connexion = sqlite3.connect("bdd.db")
+    curseur = connexion.cursor()
+    curseur.execute("SELECT Summary FROM Chapter")
+    curseur.fetchall()
+
+
 # fonction pour suprimer chapitres
 
 def supprimer_chapitre(ChapterID):
