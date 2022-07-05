@@ -39,4 +39,16 @@ def deleteCaracter():
     connexion.commit()
     connexion.close()
 
-
+def updateUser(Username = None, Password = None):
+    connexion = sqlite3.connect("bdd.db")
+    curseur = connexion.cursor()
+    NewUsername = ("Entrez votre nouveau nom d'utilisateur: ")
+    NewPassword = ("Entrez votre nouveau mot de passe: ")
+    curseur.execute("""UPDATE User
+    if Username is not None:
+        SET Username = NewUsername""")
+    curseur.execute("""UPDATE User
+    if Password is not None:
+        SET Password = NewPassword""")
+    connexion.commit()
+    connexion.close()
