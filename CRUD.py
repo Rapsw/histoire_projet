@@ -11,7 +11,15 @@ def addUserInfo(username,password):
     curseur.execute("INSERT INTO User VALUES(?,?,?);",(None,username,password))
     connexion.commit()
     connexion.close()
-
+def User_in_Base(username):
+    connexion = sqlite3.connect("bdd.db")
+    curseur = connexion.cursor()
+    curseur.execute("SELECT * FROM User WHERE Username = ?;", (username,))
+    if len(curseur.fetchone())<1:
+        return True
+    else : 
+        return False
+        
 def readUserInfo(userID):
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
@@ -65,9 +73,8 @@ def readChallenge(paragraphID):
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
     curseur.execute("""SELECT Challenge.UserID, Challenge.ParagraphID, Challenge.Text, Challenge.Vote FROM Challenge 
-                       JOIN Paragraph ON Paragraph.ParagraphID = Challenge.ParagraphID
-                       WHERE Paragraph.ParagraphID = ?;
-                       """,(paragraphID,))
+                       JOIN Paragraph ON Paragraph.ParagraphID = Challenge.Paragraph.ID
+                       WHERE Paragraph.ParagraphID = ?;""",(paragraphID,))
     print(curseur.fetchall())
 
 def exist_Challenge(paragraphID):
@@ -83,7 +90,7 @@ def exist_Challenge(paragraphID):
 def deleteChallenge(paragraphID):
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
-    curseur.execute("DELETE FROM Challenge WHERE Paragraph.ParagraphID=?;",(paragraphID,))
+    curseur.execute("DELETE FROM Challenge WHERE ParagraphID = ?;",(paragraphID,))
     connexion.commit()
     connexion.close()
 
@@ -92,10 +99,10 @@ def updateChallenge(userID, paragraphID, text = None, vote = None):
     curseur = connexion.cursor()
     if text is not None:
         curseur.execute("""UPDATE Challenge SET text = ?
-                        WHERE userID = ? AND paragraphID = ?;"""), (text, userID, paragraphID)
+                        WHERE userID = ? AND paragraphID = ?""", (text, userID, paragraphID))
     if vote is not None:
         curseur.execute("""UPDATE Challenge SET vote = ?
-                        WHERE userID = ? AND paragraphID = ?;"""), (vote, userID, paragraphID)
+                        WHERE userID = ? AND paragraphID = ?""", (vote, userID, paragraphID))
     connexion.commit()
     connexion.close()
 
@@ -166,7 +173,7 @@ def maj_comment(CommentID, new_comment, new_text):
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
     if new_comment is not None:
-        curseur.execute("UPDATE Comment SET Date = ? WHERE CommentID = ?", (new_comment, CommentID))
+        curseur.execute("UPDATE Comment SET Date = ? WHERE CommentID = ?", (str(datetime.now()), CommentID))
     if new_text is not None:
         curseur.execute("UPDATE Comment SET Text = ? WHERE CommentID = ?", (new_text, CommentID))
     connexion.commit()
@@ -188,6 +195,14 @@ def creation_chapitre(Summary):
     connexion.commit()
     connexion.close()
 
+def Chapter_in_Base(username):
+    connexion = sqlite3.connect("bdd.db")
+    curseur = connexion.cursor()
+    curseur.execute("SELECT * FROM Chapter WHERE chapterID = ?;", (username,))
+    if len(curseur.fetchone())<1:
+        return True
+    else : 
+        return False
 def read_chapitre(ChapterID):
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
@@ -218,15 +233,14 @@ def addIsInChapter(CaracterID,ChapterID):
     connexion.commit()
     connexion.close()
 
-def verifyIsInChapter(CaracterID):
+def read_IsInChapter(IsInChapter):
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
     curseur.execute(""" SELECT IsInChapter.ChapterID,FirstName,LastName FROM IsInChapter
                         JOIN Caracter ON Caracter.CaracterID = IsInChapter.CaracterID
                         JOIN Chapter ON Chapter.ChapterID = IsInChapter.ChapterID
-                        WHERE Caracter.CaracterID = IsInChapter.CaracterID
-                        GROUP BY IsInChapter.ChapterID
-                        """)
+                        WHERE Caracter.CaracterID 
+                        GROUP BY IsInChapter.ChapterID = ?;""",(IsInChapter,)) 
     if len(curseur.fetchall) == 0:
         print("Ce Personnage n'est présent dans aucun chapitre")
     else : print(curseur.fetchall())
