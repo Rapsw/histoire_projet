@@ -55,29 +55,20 @@ def get_password(username):
 
 # Création des fonctions de la table Challenge
 
-def addChallenge(userID,paragraphID,text,button):
+def addChallenge(userID,paragraphID,text):
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
     vote = 0
-    while button != "J" or "JP":
-        print("Rentrer ")
-    if button == 'J':
-        vote+=1
-    else : vote-=1
-    curseur.execute("INSERT INTO Comment VALUES(?,?,?,?)",(userID,paragraphID,text,vote))
+    curseur.execute("INSERT INTO Challenge VALUES(?,?,?,?)",(userID,paragraphID,text,vote))
     connexion.commit()
     connexion.close()
 
-def readChallenge():
+def readChallenge(paragraphID):
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
-    curseur.execute("""SELECT Username,Challenge.text,vote FROM Challenge 
-                       JOIN User ON User.UserID = Challenge.UserID
-                       JOIN Paragraph ON Paragraph.ParagraphID=Challenge.Paragraph.ID
-                       WHERE Paragraph.ParagraphID=Challenge.Paragraph.ID
-                       
-
-                       """)
+    curseur.execute("""SELECT Challenge.UserID, Challenge.ParagraphID, Challenge.Text, Challenge.Vote FROM Challenge 
+                       JOIN Paragraph ON Paragraph.ParagraphID = Challenge.Paragraph.ID
+                       WHERE Paragraph.ParagraphID = ?;""",(paragraphID,))
     print(curseur.fetchall())
 
 def exist_Challenge(paragraphID):
@@ -93,7 +84,7 @@ def exist_Challenge(paragraphID):
 def deleteChallenge(paragraphID):
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
-    curseur.execute("DELETE FROM Challenge WHERE Paragraph.ParagraphID=?;",(paragraphID,))
+    curseur.execute("DELETE FROM Challenge WHERE ParagraphID = ?;",(paragraphID,))
     connexion.commit()
     connexion.close()
 
@@ -102,10 +93,10 @@ def updateChallenge(userID, paragraphID, text = None, vote = None):
     curseur = connexion.cursor()
     if text is not None:
         curseur.execute("""UPDATE Challenge SET text = ?
-                        WHERE userID = ? AND paragraphID = ?;"""), (text, userID, paragraphID)
+                        WHERE userID = ? AND paragraphID = ?""", (text, userID, paragraphID))
     if vote is not None:
         curseur.execute("""UPDATE Challenge SET vote = ?
-                        WHERE userID = ? AND paragraphID = ?;"""), (vote, userID, paragraphID)
+                        WHERE userID = ? AND paragraphID = ?""", (vote, userID, paragraphID))
     connexion.commit()
     connexion.close()
 
@@ -181,7 +172,7 @@ def maj_comment(CommentID, new_comment, new_text):
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
     if new_comment is not None:
-        curseur.execute("UPDATE Comment SET Date = ? WHERE CommentID = ?", (new_comment, CommentID))
+        curseur.execute("UPDATE Comment SET Date = ? WHERE CommentID = ?", (str(datetime.now()), CommentID))
     if new_text is not None:
         curseur.execute("UPDATE Comment SET Text = ? WHERE CommentID = ?", (new_text, CommentID))
     connexion.commit()
@@ -245,15 +236,15 @@ def addIsInChapter(CaracterID,ChapterID):
     connexion.commit()
     connexion.close()
 
-def verifyIsInChapter():
+
+def verifyIsInChapter(IsInChapter):
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
     curseur.execute(""" SELECT IsInChapter.ChapterID,FirstName,LastName FROM IsInChapter
                         JOIN Caracter ON Caracter.CaracterID = IsInChapter.CaracterID
                         JOIN Chapter ON Chapter.ChapterID = IsInChapter.ChapterID
-                        WHERE Caracter.CaracterID = IsInChapter.CaracterID
-                        GROUP BY IsInChapter.ChapterID
-                        """)
+                        WHERE Caracter.CaracterID 
+                        GROUP BY IsInChapter.ChapterID = ?;""",(IsInChapter,)) 
     if len(curseur.fetchall) == 0:
         print("Ce Personnage n'est présent dans aucun chapitre")
     else : print(curseur.fetchall())
@@ -292,5 +283,6 @@ def deleteCaracter(caracterID):
     curseur.execute("DELETE FROM Caracter WHERE CaracterID = ?;", (caracterID,))
     connexion.commit()
     connexion.close()
+
 
 
