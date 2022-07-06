@@ -37,40 +37,48 @@ def updateUser(userID, username = None, password = None):
 
 # Création des fonctions de la table Challenge
 
-def addChallenge(userID,paragraphID,text,button):
+def addChallenge(userID,paragraphID,text):
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
     vote = 0
-    while button != "J" or "JP":
-        print("Rentrer ")
-    if button == 'J':
-        vote+=1
-    else : vote-=1
-    curseur.execute("INSERT INTO Comment VALUES(?,?,?,?)",(userID,paragraphID,text,vote))
+    curseur.execute("INSERT INTO Challenge VALUES(?,?,?,?)",(userID,paragraphID,text,vote))
     connexion.commit()
     connexion.close()
 
-def readChallenge():
+def updateVoteChallenge(paragraphID, userVote):
+    """
+    Fonction qui modifie le nombre de votes sur un challenge
+    :param paragraphID:(int) index du paragraph ayant provoqué un challenge
+    :param userVote: (int) vote de l'utilisateur sous la forme d'un +1 ou -1
+    :return: (table) tableau modifié
+    """
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
-    curseur.execute("""SELECT Username,Challenge.text,vote FROM Challenge 
-                       JOIN User ON User.UserID = Challenge.UserID
-                       JOIN Paragraph ON Paragraph.ParagraphID=Challenge.Paragraph.ID
-                       WHERE Paragraph.ParagraphID=Challenge.Paragraph.ID
-                       
+    curseur.execute("SELECT Vote FROM Challenge WHERE paragraphID = ?", (paragraphID,))
+    vote_precedent= curseur.fetchone()[0]
+    vote_new = vote_precedent + userVote
+    curseur.execute("UPDATE Challenge SET vote = ? WHERE paragraphID = ?",(vote_new, paragraphID))
+    connexion.commit()
+    connexion.close()
 
-                       """)
+def readChallenge(paragraphID):
+    connexion = sqlite3.connect("bdd.db")
+    curseur = connexion.cursor()
+    curseur.execute("""SELECT Challenge.UserID, Challenge.ParagraphID, Challenge.Text, Challenge.Vote FROM Challenge 
+                       JOIN Paragraph ON Paragraph.ParagraphID = Challenge.ParagraphID
+                       WHERE Paragraph.ParagraphID = ?;
+                       """,(paragraphID,))
     print(curseur.fetchall())
 
 def exist_Challenge(paragraphID):
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
-    curseur.execute(""" SELECT *
-                        FROM Challenge
-                        WHERE Paragraph.ParagraphID=?;""",(paragraphID,))
-    if len(curseur.fetchone()) == 0:
-        print("Ce Challenge n'existe pas")
-    else : return curseur.fetchone()
+    curseur.execute("SELECT * FROM Challenge JOIN Paragraph ON Paragraph.ParagraphID = Challenge.ParagraphID WHERE Challenge.ParagraphID=?;",(paragraphID,))
+    challenge = curseur.fetchall()
+    if len(challenge) == 0:
+        print("Il n'y a pas de contestation existante.")
+    else: 
+        print(len(challenge))
 
 def deleteChallenge(paragraphID):
     connexion = sqlite3.connect("bdd.db")
@@ -101,24 +109,21 @@ def addParagraph(ChapterID,UserID,text):
     connexion.commit()
     connexion.close()
 
-def readParagraph(ParagraphID):
+def readParagraph(paragraphID):
+    connexion = sqlite3.connect("bdd.db")
+    curseur = connexion.cursor()
+    curseur.execute("SELECT * FROM Paragraph WHERE paragraphID =?;",(paragraphID,))
+    print(curseur.fetchall())
+    connexion.commit()
+    connexion.close()
+
+def readParagraphUser(userID):
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
     curseur.execute("""SELECT Username,date,text FROM Paragraph
                        JOIN User ON User.UserID = Paragraph.UserID
                        JOIN Chapter ON Chapter.ChapterID = Paragraph.ChapterID
-                       
     """)
-    print(curseur.fetchall())
-
-def readParagraphUser(username):
-    connexion = sqlite3.connect("bdd.db")
-    curseur = connexion.cursor()
-    curseur.execute("""SELECT Username,date,Summary,Paragraph.text,vote,Challenge.text FROM Paragraph
-                       JOIN User ON User.UserID = Paragraph.UserID
-                       JOIN Chapter ON Chapter.ChapterID = Paragraph.ChapterID
-                       JOIN Challenge ON Challenge.ParagraphID = Paragraph.ParagraphID
-                       WHERE Username == ? """, (username,))
     print(curseur.fetchall())
 
 def deleteParagraph(paragraphID):
@@ -128,15 +133,13 @@ def deleteParagraph(paragraphID):
     connexion.commit()
     connexion.close()
   
-def updateParagraph(userID, chapterID, paragraphID, date = None, text = None):
+def updateParagraph(paragraphID, date = None, text = None):
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
     if date is not None:
-        curseur.execute("""UPDATE Paragraph SET date = ? 
-                        WHERE userID = ? AND chapterID = ? AND paragraphID = ?;"""), (date, userID, chapterID, paragraphID)
+        curseur.execute("""UPDATE Paragraph SET date = ? WHERE paragraphID = ?;""", (date, paragraphID))
     if text is not None:
-        curseur.execute("""UPDATE Paragraph SET text = ?
-                        WHERE userID = ? AND chapterID = ? AND paragraphID = ?;"""), (text, userID, chapterID, paragraphID)
+        curseur.execute("""UPDATE Paragraph SET text = ? WHERE paragraphID = ?;""", (text, paragraphID))
     connexion.commit()
     connexion.close()
 
@@ -211,7 +214,7 @@ def addIsInChapter(CaracterID,ChapterID):
 
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
-    curseur.execute("INSERT INTO Comment VALUES(?,?)",(CaracterID,ChapterID))
+    curseur.execute("INSERT INTO IsInChapter VALUES(?,?)",(CaracterID,ChapterID))
     connexion.commit()
     connexion.close()
 
@@ -244,6 +247,14 @@ def readCaracter(caracterID):
     curseur.execute("SELECT * FROM Caracter WHERE CaracterID = ?;",(caracterID,))
     print(curseur.fetchall())
 
+def readAllCaracters(chapterID):
+    connexion = sqlite3.connect("bdd.db")
+    curseur = connexion.cursor()
+    curseur.execute("""SELECT Caracter.CaracterID, Caracter.FirstName, Caracter.LastName, Caracter.Resume FROM Caracter
+    JOIN IsInChapter ON IsInChapter.CaracterID = Caracter.CaracterID 
+    WHERE IsInChapter.ChapterID = ? """,(chapterID,))
+    print(curseur.fetchall())
+
 def updateCaracter(caracterID, first_name = None, last_name = None, resume = None):
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
@@ -265,4 +276,4 @@ def deleteCaracter(caracterID):
 
 
 
-readParagraph(1)
+
