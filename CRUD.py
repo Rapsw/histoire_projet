@@ -42,6 +42,16 @@ def updateUser(userID, username = None, password = None):
         curseur.execute("UPDATE User SET password = ? WHERE userID = ?;", (password, userID))
     connexion.commit()
     connexion.close()
+def get_userID(username):
+    connexion = sqlite3.connect("bdd.db")
+    curseur = connexion.cursor()
+    curseur.execute("SELECT UserID FROM User WHERE Username = ?;",(username,))
+    return curseur.fetchone()
+def get_password(username):
+    connexion = sqlite3.connect("bdd.db")
+    curseur = connexion.cursor()
+    curseur.execute("SELECT Password FROM User WHERE Username = ?;",(username,))
+    return curseur.fetchone()
 
 # Création des fonctions de la table Challenge
 
@@ -109,7 +119,7 @@ def addParagraph(ChapterID,UserID,text):
     connexion.commit()
     connexion.close()
 
-def readParagraph(ParagraphID):
+def readParagraph():
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
     curseur.execute("""SELECT Username,date,text FROM Paragraph
@@ -193,14 +203,7 @@ def creation_chapitre(Summary):
     connexion.commit()
     connexion.close()
 
-def Chapter_in_Base(username):
-    connexion = sqlite3.connect("bdd.db")
-    curseur = connexion.cursor()
-    curseur.execute("SELECT * FROM Chapter WHERE chapterID = ?;", (username,))
-    if len(curseur.fetchone())<1:
-        return True
-    else : 
-        return False
+
 def read_chapitre(ChapterID):
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
@@ -220,6 +223,17 @@ def supprimer_chapitre(ChapterID):
     curseur.execute("DELETE FROM Chapter WHERE ChapterID = ?;",(ChapterID,))
     connexion.commit()
     connexion.close()
+def chapter_in_Base():
+    connexion = sqlite3.connect("bdd.db")
+    curseur = connexion.cursor()
+    curseur.execute("""SELECT 
+                        CASE WHEN EXISTS
+                        (    SELECT * FROM Chapter WHERE 1
+                        )
+                        THEN 'TRUE'
+                        ELSE 'FALSE'
+                    END """)
+
 
 #Création des fonctions de la table IsInChapter
 
@@ -231,7 +245,7 @@ def addIsInChapter(CaracterID,ChapterID):
     connexion.commit()
     connexion.close()
 
-def verifyIsInChapter(CaracterID):
+def verifyIsInChapter():
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
     curseur.execute(""" SELECT IsInChapter.ChapterID,FirstName,LastName FROM IsInChapter
@@ -280,5 +294,3 @@ def deleteCaracter(caracterID):
     connexion.close()
 
 
-
-readParagraph(1)
