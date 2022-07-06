@@ -109,7 +109,7 @@ def addParagraph(ChapterID,UserID,text):
     connexion.commit()
     connexion.close()
 
-def readParagraph():
+def readParagraph(ParagraphID):
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
     curseur.execute("""SELECT Username,date,text FROM Paragraph
@@ -280,3 +280,5 @@ def deleteCaracter(caracterID):
     connexion.close()
 
 
+
+readParagraph(1)
