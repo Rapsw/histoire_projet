@@ -11,7 +11,15 @@ def addUserInfo(username,password):
     curseur.execute("INSERT INTO User VALUES(?,?,?);",(None,username,password))
     connexion.commit()
     connexion.close()
-
+def User_in_Base(username):
+    connexion = sqlite3.connect("bdd.db")
+    curseur = connexion.cursor()
+    curseur.execute("SELECT * FROM User WHERE Username = ?;", (username,))
+    if len(curseur.fetchone())<1:
+        return True
+    else : 
+        return False
+        
 def readUserInfo(userID):
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
@@ -92,7 +100,7 @@ def addParagraph(ChapterID,UserID,text):
     connexion.commit()
     connexion.close()
 
-def readParagraph():
+def readParagraph(ParagraphID):
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
     curseur.execute("""SELECT Username,date,text FROM Paragraph
@@ -176,6 +184,14 @@ def creation_chapitre(Summary):
     connexion.commit()
     connexion.close()
 
+def Chapter_in_Base(username):
+    connexion = sqlite3.connect("bdd.db")
+    curseur = connexion.cursor()
+    curseur.execute("SELECT * FROM Chapter WHERE chapterID = ?;", (username,))
+    if len(curseur.fetchone())<1:
+        return True
+    else : 
+        return False
 def read_chapitre(ChapterID):
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
@@ -269,3 +285,5 @@ updateChallenge(2,3,"d'accord")
 addParagraph(4,2,"il était une fois")
 deleteParagraph(3)
 
+
+readParagraph(1)
