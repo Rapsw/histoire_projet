@@ -15,7 +15,7 @@ def User_in_Base(username):
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
     curseur.execute("SELECT * FROM User WHERE Username = ?;", (username,))
-    if len(curseur.fetchone())<1:
+    if len(curseur.fetchall())==0:
         return True
     else : 
         return False
@@ -46,7 +46,7 @@ def get_userID(username):
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
     curseur.execute("SELECT UserID FROM User WHERE Username = ?;",(username,))
-    return curseur.fetchone()
+    return curseur.fetchall()[0]
 def get_password(username):
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
@@ -115,8 +115,7 @@ def readParagraph():
     curseur = connexion.cursor()
     curseur.execute("""SELECT Username,date,text FROM Paragraph
                        JOIN User ON User.UserID = Paragraph.UserID
-                       JOIN Chapter ON Chapter.ChapterID = Paragraph.ChapterID
-                       
+                       JOIN Chapter ON .ChapterID = Paragraph.ChapterID
     """)
     print(curseur.fetchall())
 
@@ -148,6 +147,44 @@ def updateParagraph(userID, chapterID, paragraphID, date = None, text = None):
                         WHERE userID = ? AND chapterID = ? AND paragraphID = ?;"""), (text, userID, chapterID, paragraphID)
     connexion.commit()
     connexion.close()
+def lastParagraph():
+    connexion = sqlite3.connect("bdd.db")
+    curseur = connexion.cursor()
+    curseur.execute("""SELECT Username,date,summary,text FROM Paragraph
+                       JOIN User ON User.UserID =  Paragraph.UserID
+                       JOIN Chapter ON Chapter.ChapterID = Paragraph.ChapterID
+                       WHERE ParagraphID=(SELECT max(ParagraphID) FROM Paragraph);
+    """)
+    print(curseur.fetchall())
+def get_lastParagraphID():
+    connexion = sqlite3.connect("bdd.db")
+    curseur = connexion.cursor()
+    curseur.execute("""SELECT ParagraphID FROM Paragraph
+                       WHERE ParagraphID=(SELECT max(ParagraphID) FROM Paragraph);
+    """)
+    return curseur.fetchone()
+def firstParagraphFromChapter(chapterID):
+    
+    connexion = sqlite3.connect("bdd.db")
+    curseur = connexion.cursor()
+    curseur.execute("""SELECT summary[0] FROM Paragraph
+                       JOIN User ON User.UserID =  Paragraph.UserID
+                       JOIN Chapter ON Chapter.ChapterID = Paragraph.ChapterID
+                       WHERE Paragraph.ChapterID=?;""",(chapterID,))
+    print("""                                """,
+    
+    
+                        curseur.fetchone() ,"""
+                                                      """)
+    connexion = sqlite3.connect("bdd.db")
+    curseur = connexion.cursor()
+    curseur.execute("""SELECT Username,date,text FROM Paragraph
+                       JOIN User ON User.UserID =  Paragraph.UserID
+                       JOIN Chapter ON Chapter.ChapterID = Paragraph.ChapterID
+                       WHERE Paragraph.ChapterID=?;""",(chapterID,))
+    return (curseur.fetchall())
+   
+    
 
 # Création des fonctions de la table Comment
 
@@ -217,13 +254,23 @@ def supprimer_chapitre(ChapterID):
 def chapter_in_Base():
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
-    curseur.execute("""SELECT 
-                        CASE WHEN EXISTS
-                        (    SELECT * FROM Chapter WHERE 1
-                        )
-                        THEN 'TRUE'
-                        ELSE 'FALSE'
-                    END """)
+    curseur.execute("""SELECT * from Chapter """)
+    prout = curseur.fetchall()
+    print()
+    if len(prout)<1:
+        return False
+    else :
+        return True
+def lastChapter():
+    connexion = sqlite3.connect("bdd.db")
+    curseur = connexion.cursor()
+    curseur.execute("""SELECT ChapterID FROM Chapter
+                       
+                       WHERE ChapterID=(SELECT max(ChapterID) FROM Chapter);
+    """)
+    return curseur.fetchone()
+
+
 
 
 #Création des fonctions de la table IsInChapter
@@ -232,22 +279,24 @@ def addIsInChapter(CaracterID,ChapterID):
 
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
-    curseur.execute("INSERT INTO Comment VALUES(?,?)",(CaracterID,ChapterID))
+    curseur.execute("INSERT INTO IsInChapter VALUES(?,?)",(CaracterID,ChapterID))
     connexion.commit()
     connexion.close()
 
 
-def verifyIsInChapter(IsInChapter):
+def verifyIsInChapter(personnage):
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
-    curseur.execute(""" SELECT IsInChapter.ChapterID,FirstName,LastName FROM IsInChapter
+    curseur.execute(""" SELECT ChapterID,Summary,FirstName,LastName FROM IsInChapter
                         JOIN Caracter ON Caracter.CaracterID = IsInChapter.CaracterID
                         JOIN Chapter ON Chapter.ChapterID = IsInChapter.ChapterID
-                        WHERE Caracter.CaracterID 
-                        GROUP BY IsInChapter.ChapterID = ?;""",(IsInChapter,)) 
-    if len(curseur.fetchall) == 0:
+                        WHERE FirstName = ?,""",(personnage,))
+    liste_personnage = curseur.fetchall()           
+    if len(liste_personnage) == 0:
         print("Ce Personnage n'est présent dans aucun chapitre")
-    else : print(curseur.fetchall())
+    else : 
+        for i in liste_personnage :
+            print(i)
 
 
 #Création des fonctions de la table Caracter
@@ -262,8 +311,10 @@ def createCaracter(first_name, last_name, resume):
 def readCaracter(caracterID):
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
-    curseur.execute("SELECT * FROM Caracter WHERE CaracterID = ?;",(caracterID,))
-    print(curseur.fetchall())
+    curseur.execute("SELECT FirstName,LastName,Resume FROM Caracter WHERE CaracterID = ?;",(caracterID,))
+    personnages = curseur.fetchall()
+    for i in personnages():
+        print(i)
 
 def updateCaracter(caracterID, first_name = None, last_name = None, resume = None):
     connexion = sqlite3.connect("bdd.db")
@@ -284,5 +335,14 @@ def deleteCaracter(caracterID):
     connexion.commit()
     connexion.close()
 
+def get_lastCaracterID():
+    connexion = sqlite3.connect("bdd.db")
+    curseur = connexion.cursor()
+    curseur.execute("""SELECT CaracterID FROM Caracter
+                       
+                       WHERE CaracterID=(SELECT max(CaracterID) FROM Caracter);
+    """)
+    return curseur.fetchone()
 
 
+    
