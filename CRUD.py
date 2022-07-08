@@ -340,4 +340,4 @@ def deleteCaracter(caracterID):
 
 
 
-readParagraph(14)
+

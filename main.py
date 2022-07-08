@@ -22,6 +22,7 @@ while utilisateur_online == False:
     ### Si user veut lire l'histoire en cours ###
     if user_choice == '1':
         menu = False
+        
         while menu == False :
             user_choice = input("""Entrez la commande correspondant à votre choix. 
             1 pour lire le chapitre actuel
@@ -33,11 +34,13 @@ while utilisateur_online == False:
             ### Si user veut lire chapitre en cours ###
             if user_choice == '1':
                 menu2 = False
+                liste_paragraphes = []
+                chapitre_actuel = CD.get_chapterid_from_lastChapter()
+                liste_paragraphes.insert(0,CD.allParagraphsFromChapter(chapitre_actuel[0]))
+                print(liste_paragraphes[0][0][2])
+                i= 0
+                
                 while menu2 == False:
-                    liste_paragraphes=[]
-                    chapitre_actuel = CD.get_chapterid_from_lastChapter()
-                    liste_paragraphes.append(CD.allParagraphsFromChapter(chapitre_actuel[0]))
-                    print(liste_paragraphes[0][0])
                     user_choice = input("""Entrez la commande correspondant à votre choix. 
                     1 pour lire les paragraphes suivants
                     2 pour laisser un commentaire
@@ -46,35 +49,39 @@ while utilisateur_online == False:
 
                     """)
 
-                    ### Si user veut lire les paragraphes suivants ###
+                    ### Si user veut lire les paragraphes suivants ### 
                     if user_choice == '1':
                         menu3 = False
                         while menu3 == False:
-                            i =0
                             if i < len(liste_paragraphes):
                                 i+=1
-                                print(liste_paragraphes[0][i])
+                                print(liste_paragraphes[0][i][2]) 
                             else:
-                                print(input("Vous êtes au dernier paragraphe."))
+                                
+                                print(input("Vous êtes au dernier paragraphe.")) 
+                                i = i-1 
                             menu3 = True
 
                     ### Si user veut laisser un commentaire sur le chapitre ###
                     elif user_choice == '2':
+                       
                         menu3 = False
                         while menu3 == False:
                             text_user = input("Commencez l'écriture...")
                             CD.addComment(userID=userID, chapterID=chapitre_actuel[0],text=text_user)
                             menu3 = True
 
-                    ### Si user veut lire les paragraphes précédents ###
+                    ### Si user veut lire les paragraphes précédents ###  ==> A CORRIGER
                     elif user_choice == '3':
+                        
                         menu3 = False
                         while menu3 == False:
-                            i = 0
-                            while i >= 0:
+                            if i >= 0:
                                 i-=1
-                                print(liste_paragraphes[i][0]) #ordre à vérifier
-                            print(input("Vous êtes au premier paragraphe."))
+                                print(liste_paragraphes[0][i-1][2]) #ordre à vérifier
+                            else:
+                                print(input("Vous êtes au premier paragraphe."))
+                                i+=1
                             menu3 = True
                     
                     ### Si user veut revenir au menu précédent ###
@@ -85,13 +92,13 @@ while utilisateur_online == False:
             elif user_choice == '2':
                 menu2 = False
                 chapter_choice = int(input("Entrez le numéro du chapitre: "))
-                #aller au 1er paragraphe du chapitre#
-                liste_paragraphes=[]
-                liste_paragraphes.append(CD.allParagraphsFromChapter(chapter_choice))
-                first_paragraph = liste_paragraphes[0][0]
-              
-                while menu2 == False:                  
-                    print(first_paragraph)
+                liste_paragraphes = []
+                chapitre_actuel = CD.get_chapterid_from_lastChapter()
+                liste_paragraphes.insert(0,CD.allParagraphsFromChapter(chapitre_actuel[0]))
+                print(liste_paragraphes[0][0][2])
+                i= 0
+                
+                while menu2 == False:
                     user_choice = input("""Entrez la commande correspondant à votre choix. 
                     1 pour lire les paragraphes suivants
                     2 pour laisser un commentaire
@@ -100,37 +107,41 @@ while utilisateur_online == False:
 
                     """)
 
-                    ### Si user veut lire les paragraphes suivants ###
+                    ### Si user veut lire les paragraphes suivants ### 
                     if user_choice == '1':
                         menu3 = False
                         while menu3 == False:
-                            i =0
                             if i < len(liste_paragraphes):
                                 i+=1
-                                print(liste_paragraphes[i])
+                                print(liste_paragraphes[0][i][2]) 
                             else:
-                                print(input("Vous êtes au dernier paragraphe."))
+                                
+                                print(input("Vous êtes au dernier paragraphe.")) 
+                                i = i-1 
                             menu3 = True
 
-                    ### Si user veut laisser un commentaire ###
+                    ### Si user veut laisser un commentaire sur le chapitre ###
                     elif user_choice == '2':
+                       
                         menu3 = False
                         while menu3 == False:
                             text_user = input("Commencez l'écriture...")
-                            CD.addComment(userID=userID, chapterID=chapter_choice[0],text=text_user)
+                            CD.addComment(userID=userID, chapterID=chapitre_actuel[0],text=text_user)
                             menu3 = True
 
-                    ### Si user veut lire les paragraphes suivants ###
+                    ### Si user veut lire les paragraphes précédents ###  ==> A CORRIGER
                     elif user_choice == '3':
+                        
                         menu3 = False
                         while menu3 == False:
-                            i = 0
-                            while i >= 0:
+                            if i >= 0:
                                 i-=1
-                                print(liste_paragraphes[i][0]) #ordre à vérifier
-                            print(input("Vous êtes au premier paragraphe."))
+                                print(liste_paragraphes[0][i-1][2]) #ordre à vérifier
+                            else:
+                                print(input("Vous êtes au premier paragraphe."))
+                                i+=1
                             menu3 = True
-
+                    
                     ### Si user veut revenir au menu précédent ###
                     elif user_choice == '4':
                         menu2 = True
