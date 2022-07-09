@@ -1,8 +1,9 @@
 import sqlite3
 from datetime import datetime
 
-from nbformat import read
-
+"""Toutes les fonctions n'ont pas été utilisé par manque de temps : certaines ont été crées pour optimiser ce brief (la partie facultatif)
+   
+"""
 # Création des fonctions de la table User
 
 def addUserInfo(username,password):
@@ -63,13 +64,14 @@ def addChallenge(userID,paragraphID,text):
     connexion.commit()
     connexion.close()
 
-def readChallenge(paragraphID):
+def selectChallenge(paragraphID):
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
-    curseur.execute("""SELECT Challenge.UserID, Challenge.ParagraphID, Challenge.Text, Challenge.Vote FROM Challenge 
-                       JOIN Paragraph ON Paragraph.ParagraphID = Challenge.Paragraph.ID
+    curseur.execute("""SELECT Username,date,Challenge.Text,Vote FROM Challenge 
+                       JOIN Paragraph ON Paragraph.ParagraphID = Challenge.ParagraphID
+                       JOIN User ON User.UserID = Challenge.UserID
                        WHERE Paragraph.ParagraphID = ?;""",(paragraphID,))
-    print(curseur.fetchall())
+    return curseur.fetchall()
 
 def exist_Challenge(paragraphID):
     connexion = sqlite3.connect("bdd.db")
@@ -81,14 +83,14 @@ def exist_Challenge(paragraphID):
         print("Ce Challenge n'existe pas")
     else : return curseur.fetchone()
 
-def deleteChallenge(paragraphID):
+def deleteChallenge():
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
-    curseur.execute("DELETE FROM Challenge WHERE ParagraphID = ?;",(paragraphID,))
+    curseur.execute("DELETE FROM Challenge ")
     connexion.commit()
     connexion.close()
 
-def updateChallenge(userID, paragraphID, text = None, vote = None):
+def updateChallenge(userID, paragraphID, text, vote):
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
     if text is not None:
@@ -99,6 +101,14 @@ def updateChallenge(userID, paragraphID, text = None, vote = None):
                         WHERE userID = ? AND paragraphID = ?""", (vote, userID, paragraphID))
     connexion.commit()
     connexion.close()
+def voteChallenge(vote):
+    connexion = sqlite3.connect("bdd.db")
+    curseur = connexion.cursor()
+    curseur.execute("""UPDATE Challenge SET vote = ?;""",(vote))
+    connexion.commit()
+    connexion.close()
+
+
 
 # Création des fonctions de la table Paragraph
 
@@ -163,7 +173,7 @@ def get_lastParagraphID():
                        WHERE ParagraphID=(SELECT max(ParagraphID) FROM Paragraph);
     """)
     return curseur.fetchone()
-def firstParagraphFromChapter(chapterID):
+def allParagraphsFromChapter(chapterID):
     
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
@@ -251,17 +261,14 @@ def supprimer_chapitre(ChapterID):
     curseur.execute("DELETE FROM Chapter WHERE ChapterID = ?;",(ChapterID,))
     connexion.commit()
     connexion.close()
-def chapter_in_Base():
+def chapter_in_Base(ChapterID):
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
-    curseur.execute("""SELECT * from Chapter """)
-    prout = curseur.fetchall()
-    print()
-    if len(prout)<1:
-        return False
-    else :
-        return True
-def lastChapter():
+    curseur.execute("""SELECT * from Chapter 
+                       WHERE ChapterID = ?;""",(ChapterID,))
+    chapter = curseur.fetchall()
+    return len(chapter)
+def lastChapterID():
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
     curseur.execute("""SELECT ChapterID FROM Chapter
@@ -344,5 +351,3 @@ def get_lastCaracterID():
     """)
     return curseur.fetchone()
 
-
-    
