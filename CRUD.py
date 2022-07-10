@@ -1,6 +1,8 @@
 import sqlite3
 from datetime import datetime
 
+from more_itertools import first
+
 """Toutes les fonctions n'ont pas été utilisé par manque de temps : certaines ont été crées pour optimiser ce brief (la partie facultatif)
    
 """
@@ -21,11 +23,11 @@ def User_in_Base(username):
     else : 
         return False
         
-def readUserInfo(userID):
+def selectUserInfo():
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
-    curseur.execute("SELECT Username,Password FROM User WHERE UserID = ?;",(userID,))
-    print(curseur.fetchall())
+    curseur.execute("SELECT * FROM User")
+    return curseur.fetchall()
 
 def deleteUserInfo(userID):
     connexion = sqlite3.connect("bdd.db")
@@ -193,7 +195,14 @@ def allParagraphsFromChapter(chapterID):
                        JOIN Chapter ON Chapter.ChapterID = Paragraph.ChapterID
                        WHERE Paragraph.ChapterID=?;""",(chapterID,))
     return (curseur.fetchall())
-   
+def getUserIDfromLastParagraph():
+    connexion = sqlite3.connect("bdd.db")
+    curseur = connexion.cursor()
+    curseur.execute("""SELECT UserID FROM Paragraph
+                       WHERE ParagraphID=(SELECT max(ParagraphID) FROM Paragraph);
+    """)
+    return curseur.fetchone()
+
     
 
 # Création des fonctions de la table Comment
@@ -291,13 +300,13 @@ def addIsInChapter(CaracterID,ChapterID):
     connexion.close()
 
 
-def verifyIsInChapter(personnage):
+def verifyIsInChapter(firstname):
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
-    curseur.execute(""" SELECT ChapterID,Summary,FirstName,LastName FROM IsInChapter
+    curseur.execute(""" SELECT ChapterID,FirstName,LastName,Summary FROM IsInChapter
                         JOIN Caracter ON Caracter.CaracterID = IsInChapter.CaracterID
                         JOIN Chapter ON Chapter.ChapterID = IsInChapter.ChapterID
-                        WHERE FirstName = ?,""",(personnage,))
+                        WHERE FirstName = ?,""",(firstname,))
     liste_personnage = curseur.fetchall()           
     if len(liste_personnage) == 0:
         print("Ce Personnage n'est présent dans aucun chapitre")
@@ -320,9 +329,19 @@ def readCaracter(caracterID):
     curseur = connexion.cursor()
     curseur.execute("SELECT FirstName,LastName,Resume FROM Caracter WHERE CaracterID = ?;",(caracterID,))
     personnages = curseur.fetchall()
+
     for i in personnages():
         print(i)
-
+def printAllCaracter():
+    connexion = sqlite3.connect("bdd.db")
+    curseur = connexion.cursor()
+    curseur.execute("""SELECT FirstName,LastName,Resume,ChapterID From Caracter
+                        JOIN IsInChapter ON Caracter.CaracterID = IsInChapter.CaracterID
+                        GROUP BY FirstName
+    """)
+    liste = curseur.fetchall()
+    for i in liste:
+        print(i)
 def updateCaracter(caracterID, first_name = None, last_name = None, resume = None):
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
@@ -346,8 +365,17 @@ def get_lastCaracterID():
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
     curseur.execute("""SELECT CaracterID FROM Caracter
-                       
                        WHERE CaracterID=(SELECT max(CaracterID) FROM Caracter);
     """)
     return curseur.fetchone()
+
+def get_CaracterID(firstname):
+    connexion = sqlite3.connect("bdd.db")
+    curseur = connexion.cursor()
+    curseur.execute("""SELECT CaracterID FROM Caracter
+    
+                       WHERE FirstName =?;""",(firstname,))
+    caracterID = curseur.fetchone()
+    return caracterID
+
 

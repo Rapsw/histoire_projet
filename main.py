@@ -1,4 +1,4 @@
-from click import option
+from datetime import datetime
 import CRUD as CD
 import main_functions as mf
 
@@ -6,7 +6,7 @@ import main_functions as mf
 liste_chapitre_cloture = []
 challenge_encours = []
 liste_voteurs = []
-nb_utilisateurs = 0
+nb_utilisateurs = []
 vote = 0
 mega_boucle = False
 
@@ -16,6 +16,10 @@ while mega_boucle == False :
     #############
     # CONNEXION #
     #############
+    """"Simple demande à l'utilisateur d'envoyer une reponse pour savoir si il a un compte si non il en crée un et est renvoyé au à cette demande et si oui il se connecte
+        les variable fini sont pour l'authentification et utilisateur_online pour la boucle quand l'utilisateur est connecté
+        ces variables sont bien en dehors de leurs boucleurs respectives pour ne passe causer de boucle infinis ou d'erreurs.
+    """
     reponse = None
     fini = False
     utilisateur_online=True
@@ -42,7 +46,11 @@ while mega_boucle == False :
             alreadyused = CD.User_in_Base(username)
         password = input("Entrer un mot de passe ")
         CD.addUserInfo(username,mf.chiffrage_password(password))
-        nb_utilisateurs += 1
+        nb_utilisateurs=CD.selectUserInfo()
+        """ on demande à l'utilisateur de de créer un pseudo et un mot de passe et tant que ce pseudo n'est pas déja utilisé elle lui demande d'en taper un nouveau
+        quand le pseudo donné est nouveau on ajoutre l'utilisateur à l'a pas de donné
+        à chaque fois qu'un utilisateur est rentré dans la base de donné on va changer la longueur de la liste nb_utilisateurs
+        """
     elif reponse == 'O': 
     ##################################
     # UTILISATEUR ENTRE DANS LA BASE #
@@ -54,13 +62,21 @@ while mega_boucle == False :
             fini =mf.authentification(username,password)
         userID=CD.get_userID(username)
         paragraphID = CD.get_lastParagraphID()
+        """ tant que fini est faux faux on demande à l'utilisateur qui a compte de rentrer des identifiants correctes
+            les variables userID et paragraphID sont importants elle recupérent l'ID de l'utilisateurs et du dernier paragraphe ce sont des liste de 1 tuple
+            donc pour les utiliser on devra mettre un [0] après les avoir appelés
+        """
         while utilisateur_online == True:
+            """tant que utilisateur online est vrai on boucle
+            """
             ###################
             # MENU PRINCIPAL  #
             ###################
             CD.lastParagraph()
             if len(challenge_encours)>0:
                 print(CD.selectChallenge(paragraphID[0]))
+            """ avec lastParagraph on affiche le dernier paragraphe si il existe un challenge on l'affiche aussi
+            """
             user_choice = input(""" 
                 ###############################################################################################################
                 #                                                                                                             #
@@ -79,7 +95,9 @@ while mega_boucle == False :
             ####################################
             # CHOIX 1 : LECTURE D'UNE HISTOIRE #
             ####################################
-                menu = False
+                """Variable du menu principale du choix "menu" qui va nous permettre de boucler et aussi de sortir de cette boucle
+                """
+                menu = False 
                 while menu == False :
                     user_choice = input(""" 
                 ###############################################################################################################
@@ -102,9 +120,14 @@ while mega_boucle == False :
                         liste_paragraphes.append(CD.allParagraphsFromChapter(chapitre_actuel[0]))
                         menu2 = False
                         i = 0
+                        """initialisation des variables importantes du choix 1.1 elle sont en dehors de la boucle pour les utiliser sans aucune réaffection plus tard
+                            lastchapter nous renvoie une liste de 1 tuple contenat l'ID du chapitre en cours
+                            liste_paragraphes est une liste de liste des paragraphes du chapitre en cours
+                        """
                         while menu2 == False:
                             
                             print(liste_paragraphes[0][0])
+                            #"affichage du premier élément du premier paragraphe liste_paragraphe étant une liste de liste le deuxième [] va permettre de passer ou de revenir à une page"
                             user_choice = input(""" 
                 ###############################################################################################################
                 #                                                                                                             #
@@ -120,8 +143,11 @@ while mega_boucle == False :
                             ###################################
                             # CHOIX 1.1.1 PARAGRAPHE SUIVANTE #
                             ###################################
-                                i +=1
-                                print(liste_paragraphes[0][i])
+                                if len(liste_paragraphes[0])>1:
+                                    i +=1
+                                    print(liste_paragraphes[0][i])
+                                else :
+                                    print("c'est la première et derniere page")
                                 menu3 = False
                                 while menu3 == False:
                                     user_choice = input(""" 
@@ -149,6 +175,13 @@ while mega_boucle == False :
                                             menu3 = True
                                     elif  user_choice =="3":
                                         menu3 = True
+                                    else:
+                                        print("Commande invalide. Veuillez entrer une commande valide!")
+                                    """ si l'utlisateur choisit 1 on incrémente i de plus 1 et on print le paragraph suivant tant que i est bien inférieur à la longueur de la liste -1 c'est à dire
+                                    tant qu'on est bien à al derniere page sinon elle nous renvoie en boucle que l'on est à la dernière page
+                                    si l'utilisateur choisit 2 on décremente i de moins 1 tant que i est supérieur à 0 c'est à dire tant qu'on à la deuxième sinon elle nous renvoie au menu principal à 
+                                    la première page
+                                    """
                             elif user_choice == '2':
                             ######################################
                             # CHOIX 1.1.2 LAISSER UN COMMENTAIRE #
@@ -161,6 +194,8 @@ while mega_boucle == False :
                             # CHOIX 1.1.3 MENU PRECEDENT #
                             ##############################
                                 menu2 = True
+                            else:
+                                print("Commande invalide. Veuillez entrer une commande valide!")
                     elif user_choice == '2':
                     ################################
                     # CHOIX 1.2 LIRE UN AUTRE CHAPITRE #
@@ -173,7 +208,9 @@ while mega_boucle == False :
                         liste_paragraphes=[]
                         liste_paragraphes.append(CD.allParagraphsFromChapter(chapter_choice))
                         first_paragraph = liste_paragraphes[0][0]
-                        
+                        """ lire un autre chapitre ressemble à lire un chapitre en cours sauf qu'on demande à l'utilisateur un chapterID particulier 
+                        on doit ainsi donc changer également la liste paragraphes en lui ajoutant bien une liste de paragraphes correspondant bien au chapitre choisi
+                        """
                         while menu2 == False:                  
                             print(first_paragraph)
                             user_choice = input(""" 
@@ -192,8 +229,11 @@ while mega_boucle == False :
                             #################################
                             # CHOIX 1.2.1 PARAGRAPE SUIVANT #
                             #################################
-                                i+=1
-                                print(liste_paragraphes[0][i])
+                                if len(liste_paragraphes[0])>1:
+                                    i+=1
+                                    print(liste_paragraphes[0][i])
+                                else :
+                                    print("c'est la première et derniere page")
                                 
                                 menu3 = False
                                 while menu3 == False:
@@ -236,11 +276,15 @@ while mega_boucle == False :
                             # CHOIX 1.2.3 MENU PRECEDENT #
                             ##############################
                                 menu2 = True
+                            else:
+                                print("Commande invalide. Veuillez entrer une commande valide!")
                     elif user_choice == '3':
                     #############################
                     # CHOIX 1.3 MENU PRECEDENT  #
                     #############################
                         menu = True
+                    else:
+                        print("Commande invalide. Veuillez entrer une commande valide!")
             elif user_choice == '2':
             ##########################################################
             # CHOIX 2 : LAISSEZ UN COMMENTAIRE DANS UN CHAPITRE      #
@@ -293,6 +337,9 @@ while mega_boucle == False :
                     ####################################
                     # CHOIX 3.1 ECRIRE LA CONTESTATION #
                     ####################################
+                        """ Si il y'a un challenge en cours on renvoie l'utilisateur au menu principal lui disant qu'il y'en a déja un sinon 
+                        on un crée un et Très IMPORTANT on ajoute ce challenge à notre variable challenge_encours
+                        """
                         if len(challenge_encours) == 0:
                             challenge = input("Entrez votre argumentation de contestation : ")
                             CD.addChallenge(userID[0],paragraphID[0],challenge)
@@ -308,10 +355,14 @@ while mega_boucle == False :
                             print(CD.selectChallenge(paragraphID[0]))
                         else : 
                             print("Il n'y a aucun constestation en cours : retour au menu précedent")
+                        #"si un challenge est en cours on l'affiche avec le dernier paragraph sinon on lui envoie un message d'erreur"
                     elif contest == "3":
                         ###################
                         # CHOIX 3.3 VOTER #
                         ###################
+                        """ Le vote fonctionne de la mnière suivante , un utilisateur ne peut voter qu'une fois , tous les utilisateurs doivent voté 
+                        si le vote final est positif ou égale à 0 le challenge gagne et on supprime le paragraphe sinon il est supprimé
+                        """
                         if userID in liste_voteurs:
                             print("Vous avez déja voter : retour au menu précèdent")
                         else :
@@ -320,7 +371,7 @@ while mega_boucle == False :
                                 vote +=1
                                 CD.voteChallenge(vote)
                                 liste_voteurs.append(userID)
-                                if len(liste_voteurs)== nb_utilisateurs:
+                                if len(liste_voteurs)==len(nb_utilisateurs):
                                     if vote < 0 :
                                         CD.deleteChallenge()
                                         liste_voteurs.clear()
@@ -334,14 +385,16 @@ while mega_boucle == False :
                                 vote -=1
                                 CD.voteChallenge(vote)
                                 liste_voteurs.append(userID)
-                                if len(liste_voteurs)== nb_utilisateurs:
+                                if len(liste_voteurs)== len(nb_utilisateurs):
                                     if vote < 0 :
                                         CD.deleteChallenge()
                                         liste_voteurs.clear()
+                                        challenge_encours.clear()
                                     else:
                                         CD.deleteChallenge()
                                         CD.deleteParagraph(paragraphID[0])
                                         liste_voteurs.clear()
+                                        challenge_encours.clear()
                             else :
                                 print("choix invalide")
                     elif contest == "4":
@@ -372,8 +425,8 @@ while mega_boucle == False :
                 #                               -1 Clore le chapitre                                                          #
                 #                               -2 Ecrire un nouveau paragraphe                                               #
                 #                               -3 Personnages                                                                #
-                #                               -4 menu précèdent                                                             #
-                #                                                                                                             #
+                #                               -4 Modifier un paragraphe                                                     #
+                #                               -5 Menu précèdent                                                             #
                 ###############################################################################################################            
                     
                             """)
@@ -384,12 +437,14 @@ while mega_boucle == False :
                             chapitre_en_cours = CD.lastChapterID()
                             liste_chapitre_cloture.append(chapitre_en_cours[0]) 
                             print("le chapitre ",chapitre_en_cours[0]," est cloturé") 
+                            #POUR cloturer un chapitre on récuperer l'ID du chapitre et on le mets dans une liste de chapitre cloturés qu'on va utlisé plus tard"
                         elif writer_choice == '2':
                             ###########################################
                             # CHOIX 4.2 : ECRIRE UN NOUVEAU PARAGRAPHE  #
                             ###########################################
                             chapitre_en_cours = CD.lastChapterID()
                             création = False
+                            #on initialise nos variables importantes 
                             if chapitre_en_cours[0] in liste_chapitre_cloture:
                                 #################################################################
                                 # ECRITURE DU NOUVEAU PARAGRAPHE MAIS LE CHAPITRE EST CLOTURE   #
@@ -418,6 +473,7 @@ while mega_boucle == False :
                                             if choix == 'O':
                                                 création = False
                                             else : création = True
+                                            
                                 ###########################################
                                 # CREATION DU PARAGRAPHE APRES PERSONNAGE #
                                 ###########################################
@@ -461,8 +517,85 @@ while mega_boucle == False :
                                     else : 
                                         print("Entre un vrai choix frérot ")
                         elif writer_choice == '3':
-                            pass
-                        elif writer_choice == '4':
+                            menu = False
+                            while menu == False:
+                                choix = input("""
+                ###############################################################################################################
+                #                                                                                                             #
+                #                           PERSONNAGES                                                                       #
+                #                               -1 Afficher tous les personnages                                              #
+                #                               -2 Chercher un personnage                                                     #
+                #                               -3 Modifier un personnage                                                     #
+                #                               -4 menu précèdent                                                             #
+                #                                                                                                             #
+                ###############################################################################################################            
+                    
+                            """)
+                                if choix == "1":
+                                    CD.printAllCaracter()
+                                elif choix == "2":
+                                    firstname = input("Entrer le nom du personnage que vous voulez chercher : ")
+                                    CD.verifyIsInChapter(firstname)  
+                                elif choix == "3":
+                                    menu2 = False
+                                    while menu2 == False :
+                                        choix = input("""
+                ###############################################################################################################
+                #                                                                                                             #
+                #                           MODIFIER UN PERSONNAGE                                                            #
+                #                               -1 Modfier un personnage                                                      #
+                #                               -2 Mettre à jour les personnages figurant dans un chapitre                    #
+                #                               -3 Menu précèdent                                                             #
+                #                                                                                                             #
+                ###############################################################################################################            
+                    
+                            """)
+                                        if choix =='1':
+                                            character_name = input("Entrez le prénom du personnage que vous voulez modifier :  ")
+                                            caracterID = CD.get_CaracterID(character_name)
+                                            update_firstname = input("Voulez vous modifier le prénom du personnage ? Entrez O pour Oui et N pour Non")
+                                            if update_firstname == '0':
+                                                new_firstname = input("Entrez le nouveau prénom du personnage : ")
+                                            elif update_firstname == "N":
+                                                new_firstname = None
+                                            else : 
+                                                print("commande invalide")
+                                            update_lastname = input("Voulez vous modifier le nom du personnage ? Entrez O pour Oui et N pour Non")
+                                            if update_lastname == '0':
+                                                new_lastname = input("Entrez le nouveau nom du personnage : ")
+                                            elif update_lastname == "N":
+                                                new_lastname = None
+                                            else : 
+                                                print("commande invalide")
+                                            update_resume = input("Voulez vous modifier le résumé du personnage ? Entrez O pour Oui et N pour Non")
+                                            if update_resume == '0':
+                                                new_resume = input("Entrez le nouveau résumé du personnage : ")
+                                            elif update_resume == "N":
+                                                new_resume = None
+                                            else : 
+                                                print("commande invalide")
+                                            CD.updateCaracter(caracterID[0,new_firstname,new_lastname,new_resume])
+                                            print("Le personnage a été modifié ")
+                                        elif choix =="2":
+                                            firstname = input("Entrer le nom du personnage")
+                                            chapter = input("Entrer le numéro du nouveau chapitre ou vous avez mentionné un personnage existant ")
+                                            caracterID = CD.get_CaracterID(firstname)
+                                            CD.addIsInChapter(caracterID[0],chapter)
+                                        elif choix =="3":
+                                            menu2 = True
+                                        else:
+                                            print("Commande invalide. Veuillez entrer une commande valide!")
+                                else:
+                                    print("Commande invalide. Veuillez entrer une commande valide!")      
+                        elif writer_choice == "4":
+                            writerID = CD.getUserIDfromLastParagraph()
+                            chapitre_en_cours = CD.lastChapterID()
+                            if userID[0]== writerID[0]:
+                                newtext=input("Veuillez entrer les modifications que vous voulez apporter à votrer paragraphe")
+                                CD.updateParagraph(userID[0],chapitre_en_cours[0],paragraphID[0],str(datetime.now()),newtext)
+                            else :
+                                print("Vous n'êtes pas l'auteur du dernier paragraphe vous ne pouvez pas en conséquence le modifier: retour au menu précèdent ")
+                        elif writer_choice == '5':
                         ##########################
                         # CHOIX 4.4 RETOUR MENU  #
                         ##########################
