@@ -78,12 +78,12 @@ def selectChallenge(paragraphID):
 def exist_Challenge(paragraphID):
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
-    curseur.execute(""" SELECT *
-                        FROM Challenge
-                        WHERE Paragraph.ParagraphID=?;""",(paragraphID,))
-    if len(curseur.fetchone()) == 0:
-        print("Ce Challenge n'existe pas")
-    else : return curseur.fetchone()
+    curseur.execute("SELECT * FROM Challenge JOIN Paragraph ON Paragraph.ParagraphID = Challenge.ParagraphID WHERE Challenge.ParagraphID=?;",(paragraphID,))
+    challenge = curseur.fetchall()
+    if len(challenge) == 0:
+        print("Il n'y a pas de contestation existante.")
+    else: 
+        print(len(challenge))
 
 def deleteChallenge():
     connexion = sqlite3.connect("bdd.db")
@@ -127,18 +127,8 @@ def readParagraph():
     curseur = connexion.cursor()
     curseur.execute("""SELECT Username,date,text FROM Paragraph
                        JOIN User ON User.UserID = Paragraph.UserID
-                       JOIN Chapter ON .ChapterID = Paragraph.ChapterID
-    """)
-    print(curseur.fetchall())
-
-def readParagraphUser(username):
-    connexion = sqlite3.connect("bdd.db")
-    curseur = connexion.cursor()
-    curseur.execute("""SELECT Username,date,Summary,Paragraph.text,vote,Challenge.text FROM Paragraph
-                       JOIN User ON User.UserID = Paragraph.UserID
                        JOIN Chapter ON Chapter.ChapterID = Paragraph.ChapterID
-                       JOIN Challenge ON Challenge.ParagraphID = Paragraph.ParagraphID
-                       WHERE Username == ? """, (username,))
+    """)
     print(curseur.fetchall())
 
 def deleteParagraph(paragraphID):
@@ -148,15 +138,13 @@ def deleteParagraph(paragraphID):
     connexion.commit()
     connexion.close()
   
-def updateParagraph(userID, chapterID, paragraphID, date = None, text = None):
+def updateParagraph(paragraphID, date = None, text = None):
     connexion = sqlite3.connect("bdd.db")
     curseur = connexion.cursor()
     if date is not None:
-        curseur.execute("""UPDATE Paragraph SET date = ? 
-                        WHERE userID = ? AND chapterID = ? AND paragraphID = ?;"""), (date, userID, chapterID, paragraphID)
+        curseur.execute("""UPDATE Paragraph SET date = ? WHERE paragraphID = ?;""", (date, paragraphID))
     if text is not None:
-        curseur.execute("""UPDATE Paragraph SET text = ?
-                        WHERE userID = ? AND chapterID = ? AND paragraphID = ?;"""), (text, userID, chapterID, paragraphID)
+        curseur.execute("""UPDATE Paragraph SET text = ? WHERE paragraphID = ?;""", (text, paragraphID))
     connexion.commit()
     connexion.close()
 def lastParagraph():
