@@ -37,9 +37,9 @@ Dernière version : 1.0
 
 ## Auteurs
 
-- Jeffrey NGUYEN alias <JynMoriarty> 
-- Nina NUSBAUMER alias <NinaNusb>
-- Rapsw CALAPSU alias <Rapsw> 
+- Jeffrey NGUYEN alias JynMoriarty 
+- Nina NUSBAUMER alias NinaNusb
+- Rapsw CALAPSU alias Rapsw
 
 ## Problème
 Problème lié au main : au début du main on a initialisé des variables qui sont en dehors de notre programme et qui ont une certaine importance 
